@@ -13,12 +13,12 @@ from xml.etree import ElementTree
 DISCORD_TOKEN = config('DISCORD_TOKEN')
 CONFIGURATION_PATH = config('CONFIGURATION_PATH')
 COMMAND_PREFIX = config('COMMAND_PREFIX', default='/')
-
-interval = 86400 # number of second in day
+URLS = config("URL_LIST")
+INTERVAL = int(config("INTERVAL_SECOND", "86400")) # number of second in a day
 
 configuration = {
-    "interval_second": str(interval),
-    "url_list": []
+    "interval_second": str(INTERVAL),
+    "url_list": URLS.split(',')
 }
 
 if (os.path.isfile(CONFIGURATION_PATH)):
@@ -29,8 +29,7 @@ else:
     with open(CONFIGURATION_PATH, "w") as f:
         print("config file " + CONFIGURATION_PATH + " not found, generating one now")
         json.dump(configuration, f)
-        print("configuration file " + CONFIGURATION_PATH + " created, ending now")
-        exit()
+        print("configuration file " + CONFIGURATION_PATH + " created")
 
 def pull_news():
     print("pulling news !")
