@@ -22,15 +22,18 @@ configuration = {
 }
 
 if (os.path.isfile(CONFIGURATION_PATH)):
+    print("config file " + CONFIGURATION_PATH + " found")
     with open(DATAFILE_PATH, "r") as f:
         configuration = json.load(f)
 else:
     with open(CONFIGURATION_PATH, "w") as f:
+        print("config file " + CONFIGURATION_PATH + " not found, generating one now")
         json.dump(configuration, f)
         print("configuration file " + CONFIGURATION_PATH + " created, ending now")
-        return
+        exit()
 
 def pull_news():
+    print("pulling news !")
     date_now = datetime.datetime.now()
     previous_run = None
     if "last_run" in configuration:
