@@ -22,14 +22,11 @@ configuration = {
 }
 
 if (os.path.isfile(CONFIGURATION_PATH)):
-    print("config file " + CONFIGURATION_PATH + " found")
     with open(DATAFILE_PATH, "r") as f:
         configuration = json.load(f)
 else:
     with open(CONFIGURATION_PATH, "w") as f:
-        print("config file " + CONFIGURATION_PATH + " not found, generating one now")
         json.dump(configuration, f)
-        print("configuration file " + CONFIGURATION_PATH + " created")
 
 def pull_news():
     print("pulling news !")
@@ -39,6 +36,7 @@ def pull_news():
         previous_run = dateutil.parser.parse(configuration["last_run"])
 
     for url in configuration["url_list"]:
+        print("pulling from " + url)
         r_result = requests.get(url)
         if r_result.status_code == requests.codes.ok:
             tree = ElementTree.fromstring(r_result.content)
