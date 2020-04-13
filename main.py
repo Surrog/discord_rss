@@ -6,29 +6,38 @@ import json
 import os.path
 import threading
 import datetime
-import dateutil
-import requests
-from xml.etree import ElementTree
+import dateutil.parser
+import feedparser
+import asyncio
+from bs4 import BeautifulSoup
+from time import mktime
 
 DISCORD_TOKEN = config('DISCORD_TOKEN')
 CONFIGURATION_PATH = config('CONFIGURATION_PATH')
 COMMAND_PREFIX = config('COMMAND_PREFIX', default='/')
 URLS = config("URL_LIST")
-INTERVAL = int(config("INTERVAL_SECOND", "86400")) # number of second in a day
+INTERVAL = int(config("INTERVAL_SECOND", default="86400")) # number of second in a day
+CHANNEL_TARGET = config("CHANNEL_TO_POST", default="")
 
 configuration = {
-    "interval_second": str(INTERVAL),
-    "url_list": URLS.split(',')
+    "interval_second": int(INTERVAL),
+    "url_list": [item.strip() for item in URLS.split(',')],
 }
 
 if (os.path.isfile(CONFIGURATION_PATH)):
-    with open(DATAFILE_PATH, "r") as f:
+    with open(CONFIGURATION_PATH, "r") as f:
         configuration = json.load(f)
 else:
     with open(CONFIGURATION_PATH, "w") as f:
         json.dump(configuration, f)
 
-def pull_news():
+def cleanup_summary(summary):
+    return BeautifulSoup(summary, "lxml").text
+
+bot = commands.Bot(command_prefix=COMMAND_PREFIX)
+
+async def pull_news():
+    global configuration
     print("pulling news !")
     date_now = datetime.datetime.now()
     previous_run = None
@@ -37,29 +46,63 @@ def pull_news():
 
     for url in configuration["url_list"]:
         print("pulling from " + url)
-        r_result = requests.get(url)
-        if r_result.status_code == requests.codes.ok:
-            tree = ElementTree.fromstring(r_result.content)
-            for val in tree:
-                print(val)
+        feed = feedparser.parse(url)
+        if feed["bozo"] == 0:
+            for item in feed["items"]:
+                date = None
+                if "date_parsed" in item:
+                    date = datetime.datetime.fromtimestamp(mktime(item["date_parsed"]))
+                elif "published_parsed" in item:
+                    date = datetime.datetime.fromtimestamp(mktime(item["published_parsed"]))
+                elif "date" in item:
+                    date = dateutil.parser.parse(item["date"])
+                elif "published" in item:
+                    date = dateutil.parser.parse(item["published"])
+                                        
+                if previous_run is None or date is None or previous_run < date:
+                    message = "**" + item["title"] + "**\n"
+                    message += cleanup_summary(item["summary"]) + '\n'
+                    message += item["link"]
+                    if "chan_target_id" in configuration:
+                        await bot.get_channel(configuration["chan_target_id"]).send(message)
+        else:
+            print("feedparser failed : " + str(feed["bozo"])) 
+
+    if "chan_target_id" in configuration:
+        configuration["last_run"] = str(date_now)
+        with open(CONFIGURATION_PATH, "w") as f:
+            json.dump(configuration, f)
 
 timer = None
-def pull_news_at_interval():
-    pull_news()
-    timer = threading.Timer(int(configuration["interval_second"]), pull_news_at_interval)
-    timer.start()
-    return
-
-bot = commands.Bot(command_prefix=COMMAND_PREFIX)
+async def pull_news_at_interval():
+    await asyncio.sleep(configuration["interval_second"])
+    await pull_news()
+    await pull_news_at_interval()
 
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} is now connected to Discord')
-    pull_news_at_interval()
+    global configuration
+    for guild in bot.guilds:
+        for channel in guild.text_channels:
+            if channel.name == CHANNEL_TARGET:
+                print("found channel: " + channel.name)
+                configuration["chan_target_id"] = channel.id
+    if "chan_target_id" not in configuration:
+        print("can't find channel: " + CHANNEL_TARGET)
+    else:
+        await bot.get_channel(configuration["chan_target_id"]).send("posting here")
+    await pull_news()
+    await pull_news_at_interval()
 
-@bot.command(name='pull news', help='fetch news')
+@bot.command(name='pull_news', help='fetch news')
 async def _pull_news(ctx):
     await ctx.send("fetching news now !")
-    pull_news()
+    await pull_news()
+
+@bot.command(name="pull", help='pull news : fetc news')
+async def _pull(ctx, arg):
+    if arg == "news":
+        await _pull_news(ctx)
 
 bot.run(DISCORD_TOKEN)

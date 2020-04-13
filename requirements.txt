@@ -16,5 +16,7 @@ typed-ast==1.4.1
 websockets==8.1
 wrapt==1.11.2
 yarl==1.4.2
-requests
-python-dateutil
+feedparser==5.2.1
+python-dateutil==2.8.1
+beautifulsoup4==4.9.0
+lxml

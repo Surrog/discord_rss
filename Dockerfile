@@ -1,7 +1,7 @@
 FROM python:3.7-slim
 
 LABEL maintainer=francoisancel@gmail.com
-RUN apt-get update && apt-get install -y gcc
+RUN apt-get update && apt-get install -y gcc libxml2-dev libxslt1-dev libz-dev
 
 RUN useradd --create-home --shell /bin/bash appuser
 USER appuser
@@ -12,6 +12,6 @@ COPY main.py /home/appuser/src
 COPY requirements.txt /home/appuser/src
 WORKDIR /home/appuser/src
 
-RUN pip install -U -r requirements.txt
+RUN pip install -U -r /home/appuser/src/requirements.txt
 
 CMD ["python", "main.py"]
