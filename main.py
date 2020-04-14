@@ -19,12 +19,16 @@ URLS = config("URL_LIST")
 INTERVAL = int(config("INTERVAL_SECOND", default="86400")) # number of second in a day
 CHANNEL_TARGET = config("CHANNEL_TO_POST", default="")
 START_WITH_QUERY = config("START_WITH_QUERY", default="1")
+LAST_RUN = config("LAST_RUN", default="")
 
 configuration = {
     "interval_second": int(INTERVAL),
     "url_list": [item.strip() for item in URLS.split(',')],
     "link_done": {}
 }
+
+if LAST_RUN != "":
+    configuration["last_run"] = dateutil.parser.parse(LAST_RUN)
 
 if (os.path.isfile(CONFIGURATION_PATH)):
     with open(CONFIGURATION_PATH, "r") as f:
