@@ -18,6 +18,7 @@ COMMAND_PREFIX = config('COMMAND_PREFIX', default='/')
 URLS = config("URL_LIST")
 INTERVAL = int(config("INTERVAL_SECOND", default="86400")) # number of second in a day
 CHANNEL_TARGET = config("CHANNEL_TO_POST", default="")
+START_WITH_QUERY = config("START_WITH_QUERY", default="1")
 
 configuration = {
     "interval_second": int(INTERVAL),
@@ -104,7 +105,8 @@ async def on_ready():
         print("can't find channel: " + CHANNEL_TARGET)
     else:
         await bot.get_channel(configuration["chan_target_id"]).send("posting here")
-    await pull_news()
+    if START_WITH_QUERY == "1":
+        await pull_news()
     await pull_news_at_interval()
 
 @bot.command(name='pull_news', help='fetch news')
