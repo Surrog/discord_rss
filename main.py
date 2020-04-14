@@ -22,6 +22,7 @@ CHANNEL_TARGET = config("CHANNEL_TO_POST", default="")
 configuration = {
     "interval_second": int(INTERVAL),
     "url_list": [item.strip() for item in URLS.split(',')],
+    "link_done": {}
 }
 
 if (os.path.isfile(CONFIGURATION_PATH)):
@@ -33,6 +34,9 @@ else:
 
 def cleanup_summary(summary):
     return BeautifulSoup(summary, "lxml").text
+
+def news_before_date(previous_run, date):
+    return previous_run is None or date is None or previous_run < date
 
 bot = commands.Bot(command_prefix=COMMAND_PREFIX)
 
@@ -48,6 +52,9 @@ async def pull_news():
         print("pulling from " + url)
         feed = feedparser.parse(url)
         if feed["bozo"] == 0:
+            if url not in configuration["link_done"]:
+                configuration["link_done"][url] = []
+            
             for item in feed["items"]:
                 date = None
                 if "date_parsed" in item:
@@ -59,12 +66,17 @@ async def pull_news():
                 elif "published" in item:
                     date = dateutil.parser.parse(item["published"])
                                         
-                if previous_run is None or date is None or previous_run < date:
+                if news_before_date(previous_run, date) and item["link"] not in configuration["link_done"][url]:
                     message = "**" + item["title"] + "**\n"
                     message += cleanup_summary(item["summary"]) + '\n'
                     message += item["link"]
                     if "chan_target_id" in configuration:
                         await bot.get_channel(configuration["chan_target_id"]).send(message)
+                        configuration["link_done"][url].append(item["link"])
+
+            if len(configuration["link_done"][url]) > 20:
+                configuration["link_done"][url] = configuration["link_done"][url][-19:]
+            
         else:
             print("feedparser failed : " + str(feed["bozo"])) 
 
