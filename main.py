@@ -1,12 +1,10 @@
 from decouple import config
-import random
 import discord # https://pypi.org/project/discord.py/
 from discord.ext import commands
 import json
 import os.path
 import threading
 import datetime
-import dateutil.parser
 import feedparser
 import asyncio
 import logging
