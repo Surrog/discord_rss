@@ -39,15 +39,20 @@ with open(CONFIGURATION_PATH, "w") as f:
 
 log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(funcName)s(%(lineno)d) %(message)s')
 
-my_handler = RotatingFileHandler(LOGGING_PATH, mode='w', maxBytes=5*1024*1024, 
+file_handler = RotatingFileHandler(LOGGING_PATH, mode='w', maxBytes=5*1024*1024, 
                                  backupCount=2, encoding=None, delay=0)
-my_handler.setFormatter(log_formatter)
-my_handler.setLevel(logging.INFO)
+file_handler.setFormatter(log_formatter)
+file_handler.setLevel(logging.INFO)
+
+stdout_handler = logging.StreamHandler(sys.stdout)
+stdout_handler.setFormatter(log_formatter)
+stdout_handler.setLevel(logging.INFO)
 
 app_log = logging.getLogger('root')
 app_log.setLevel(logging.INFO)
 
-app_log.addHandler(my_handler)
+app_log.addHandler(file_handler)
+app_log.addHandler(stdout_handler)
 
 def exception_handler(type, value, tb):
     app_log.exception("Uncaught exception: {0}".format(str(value)))
@@ -183,6 +188,7 @@ async def on_ready():
     if "chan_target_id" not in configuration:
         app_log.warning("can't find channel: " + CHANNEL_TARGET)
     await fetch_initial_link()
+    app_log.info("initialize link done")
     await pull_news_at_interval()
 
 @bot.command(name='last_news', help='Fetch and post lastest news from each urls')
