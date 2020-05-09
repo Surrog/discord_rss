@@ -44,22 +44,27 @@ if (os.path.isfile(CONFIGURATION_PATH)):
 with open(CONFIGURATION_PATH, "w") as f:
     json.dump(configuration, f)
 
-log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(funcName)s(%(lineno)d) %(message)s')
+def create_logger:
+    log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(funcName)s(%(lineno)d) %(message)s')
 
-file_handler = RotatingFileHandler(LOGGING_PATH, mode='w', maxBytes=5*1024*1024, 
-                                 backupCount=2, encoding=None, delay=0)
-file_handler.setFormatter(log_formatter)
-file_handler.setLevel(logging.DEBUG)
+    file_handler = RotatingFileHandler(LOGGING_PATH, mode='w', maxBytes=5*1024*1024, 
+                                     backupCount=2, encoding=None, delay=0)
+    file_handler.setFormatter(log_formatter)
+    file_handler.setLevel(logging.DEBUG)
 
-stdout_handler = logging.StreamHandler(sys.stdout)
-stdout_handler.setFormatter(log_formatter)
-stdout_handler.setLevel(logging.DEBUG)
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(log_formatter)
+    stdout_handler.setLevel(logging.DEBUG)
 
-app_log = logging.getLogger('root')
-app_log.setLevel(logging.DEBUG)
+    app_log = logging.getLogger('root')
+    app_log.setLevel(logging.DEBUG)
 
-app_log.addHandler(file_handler)
-app_log.addHandler(stdout_handler)
+    app_log.addHandler(file_handler)
+    app_log.addHandler(stdout_handler)
+
+    return app_log
+
+app_log = create_logger
 
 def exception_handler(type, value, tb):
     app_log.exception("Uncaught exception: {0}".format(str(value)))
