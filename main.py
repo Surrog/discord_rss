@@ -44,7 +44,7 @@ if (os.path.isfile(CONFIGURATION_PATH)):
 with open(CONFIGURATION_PATH, "w") as f:
     json.dump(configuration, f)
 
-def create_logger:
+def create_logger():
     log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(funcName)s(%(lineno)d) %(message)s')
 
     file_handler = RotatingFileHandler(LOGGING_PATH, mode='w', maxBytes=5*1024*1024, 
