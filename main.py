@@ -96,9 +96,10 @@ def format_message(item):
 
 quip_counter = 0
 def get_quip():
-        quip = ["Today I bring _SHOCKING NEWS_  to you !"]
-        quip_counter = quip_counter + 1 % len(quip)
-        return quip[quip_counter]
+    global quip_counter
+    quip = ["Today I bring _SHOCKING NEWS_  to you !"]
+    quip_counter = quip_counter + 1 % len(quip)
+    return quip[quip_counter]
 
 def append_quip(messages):
     global QUIP_ON_NEWS
@@ -106,7 +107,7 @@ def append_quip(messages):
     if len(messages) > 0:
         if QUIP_ON_NEWS == 1:
             messages.insert(0, get_quip())
-        elif QUIP_ON_NEWS == 2 and messages > 1:                                                    
+        elif QUIP_ON_NEWS == 2 and len(messages) > 1:                                                    
             messages.insert(0, get_quip())
     return messages
                                         
