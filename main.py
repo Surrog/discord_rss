@@ -30,7 +30,6 @@ else:
     QUIP_ON_NEWS = 0
 
 configuration = {
-    "interval_second": int(INTERVAL),
     "url_list": [item.strip() for item in URLS.split(',')],
     "link_done": {},
     "last_run": str(datetime.datetime.now())
@@ -106,7 +105,7 @@ def append_quip(messages):
     
     if len(messages) > 0:
         if QUIP_ON_NEWS == 1:
-            messages.insert(0, get_quip()
+            messages.insert(0, get_quip())
         elif QUIP_ON_NEWS == 2 and messages > 1:                                                    
             messages.insert(0, get_quip())
     return messages
@@ -181,11 +180,11 @@ async def pull_last_news(ctx=None):
             url_errored.append(url)
 
     if local_ctx is not None:
-        messages = append_quip(messages)    
-        for message in messages:
-            await local_ctx.send(message)
-                            
-        elif ctx is not None:
+        if len(messages) > 0: 
+            messages = append_quip(messages)    
+            for message in messages:
+                await local_ctx.send(message)
+        else:
             await local_ctx.send("No news to post ! :(")
         
         if len(url_errored) > 0:
@@ -193,12 +192,13 @@ async def pull_last_news(ctx=None):
 
 async def pull_news_at_interval():
     date_now = datetime.datetime.now()
-    date_now += datetime.timedelta(day=1)
-    date_now.hour = HOURS_OF_FLASH_NEWS
-    date_now.minute = 0
-    second_to_wait = (date_now - datetime.datetime.now()).abs().total_seconds() 
+    if date_now.hour > HOUR_OF_FLASH_NEWS: 
+        date_now = date_now + datetime.timedelta(days=1)
+    
+    date_now = date_now.replace(hour=HOUR_OF_FLASH_NEWS, minute=0)
+    second_to_wait = abs(date_now - datetime.datetime.now()).total_seconds() 
 
-    app_log.info("next flash news in {0} hours".format(second_to_wait / 3600)
+    app_log.info("next flash news in {0} hours".format(second_to_wait / 3600))
     await asyncio.sleep(second_to_wait)
     await pull_news()
     asyncio.create_task(pull_news_at_interval())
