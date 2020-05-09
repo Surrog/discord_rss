@@ -64,7 +64,7 @@ def create_logger():
 
     return app_log
 
-app_log = create_logger
+app_log = create_logger()
 
 def exception_handler(type, value, tb):
     app_log.exception("Uncaught exception: {0}".format(str(value)))
