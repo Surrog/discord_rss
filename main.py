@@ -18,8 +18,16 @@ CONFIGURATION_PATH = config("CONFIGURATION_PATH", default="discord_rss_config.js
 LOGGING_PATH = config("LOGGING_PATH", default="discord_rss.log")
 COMMAND_PREFIX = config("COMMAND_PREFIX", default='/')
 URLS = config("URL_LIST")
-INTERVAL = int(config("INTERVAL_SECOND", default="86400")) # number of second in a day
 CHANNEL_TARGET = config("CHANNEL_TO_POST", default="")
+HOUR_OF_FLASH_NEWS = int(config("HOUR_OF_FLASH_NEWS", default=datetime.datetime.now().hour)) % 24
+QUIP_ON_NEWS = config("QUIP_ON_NEWS", default="on_multiple_news")
+
+if QUIP_ON_NEWS == "yes":
+    QUIP_ON_NEWS = 1
+elif QUIP_ON_NEWS == "on_multiple_news":
+    QUIP_ON_NEWS = 2
+else:
+    QUIP_ON_NEWS = 0
 
 configuration = {
     "interval_second": int(INTERVAL),
@@ -71,10 +79,9 @@ async def fetch_initial_link():
         if feed["bozo"] == 0:
             if url not in configuration["link_done"]:
                 configuration["link_done"][url] = []
-            
-            for item in feed["items"]:   
-                if item["link"] not in configuration["link_done"][url]:
-                    configuration["link_done"][url].append(item["link"])
+                for item in feed["items"]:   
+                    if item["link"] not in configuration["link_done"][url]:
+                        configuration["link_done"][url].append(item["link"])
 
 def format_message(item):
     message = "__**" + item["title"] + "**__\n"
@@ -88,11 +95,27 @@ def format_message(item):
         message += item["link"]
     return message
 
+quip_counter = 0
+def get_quip():
+        quip = ["Today I bring _SHOCKING NEWS_  to you !"]
+        quip_counter = quip_counter + 1 % len(quip)
+        return quip[quip_counter]
+
+def append_quip(messages):
+    global QUIP_ON_NEWS
+    
+    if len(messages) > 0:
+        if QUIP_ON_NEWS == 1:
+            messages.insert(0, get_quip()
+        elif QUIP_ON_NEWS == 2 and messages > 1:                                                    
+            messages.insert(0, get_quip())
+    return messages
+                                        
 async def pull_news(ctx=None):
     global configuration
     app_log.info("pulling news !")
 
-    messages = ["Today I bring _SHOCKING NEWS_  to you !"]
+    messages = []
     url_errored = []
 
     if ctx is None and "chan_target_id" in configuration:
@@ -117,10 +140,10 @@ async def pull_news(ctx=None):
             url_errored.append(url)
 
     if ctx is not None:
-        if len(messages) > 1:
-            for message in messages:
-                await ctx.send(message)
-        
+        messages = append_quip(messages)
+        for msg in messages:
+            await ctx.send(msg)
+                                                            
         if len(url_errored) > 0:
                 await ctx.send("Sorry these url(s) failed: {0}".format(str(url_errored)))
 
@@ -131,7 +154,7 @@ async def pull_news(ctx=None):
 async def pull_last_news(ctx=None):
     app_log.info("pulling last news !")
 
-    messages = ["Today I bring _SHOCKING NEWS_  to you !"]
+    messages = []
     url_errored = []
 
     local_ctx = None
@@ -158,9 +181,10 @@ async def pull_last_news(ctx=None):
             url_errored.append(url)
 
     if local_ctx is not None:
-        if len(messages) > 1:
-            for message in messages:
-                await local_ctx.send(message)
+        messages = append_quip(messages)    
+        for message in messages:
+            await local_ctx.send(message)
+                            
         elif ctx is not None:
             await local_ctx.send("No news to post ! :(")
         
@@ -168,7 +192,14 @@ async def pull_last_news(ctx=None):
                 await local_ctx.send("Sorry these url(s) failed: {0}".format(str(url_errored)))
 
 async def pull_news_at_interval():
-    await asyncio.sleep(configuration["interval_second"])
+    date_now = datetime.datetime.now()
+    date_now += datetime.timedelta(day=1)
+    date_now.hour = HOURS_OF_FLASH_NEWS
+    date_now.minute = 0
+    second_to_wait = (date_now - datetime.datetime.now()).abs().total_seconds() 
+
+    app_log.info("next flash news in {0} hours".format(second_to_wait / 3600)
+    await asyncio.sleep(second_to_wait)
     await pull_news()
     asyncio.create_task(pull_news_at_interval())
 
