@@ -10,8 +10,8 @@ import asyncio
 import logging
 from logging.handlers import RotatingFileHandler
 import sys
-from bs4 import BeautifulSoup
 from time import mktime
+import html2text
 
 DISCORD_TOKEN = config("DISCORD_TOKEN")
 CONFIGURATION_PATH = config("CONFIGURATION_PATH", default="discord_rss_config.json")
@@ -73,7 +73,15 @@ sys.excepthook = exception_handler
 threading.excepthook = exception_handler
 
 def cleanup_summary(summary):
-    return BeautifulSoup(summary.replace("<br>", '\n'), "lxml").text
+    text_maker = html2text.HTML2Text()
+    text_maker.ignore_links = True
+    text_maker.ignore_images = True
+    text_maker.inline_links = True
+    text_maker.protect_links = True
+    text_maker.ignore_anchors = True
+    text_maker.skip_internal_links = True
+    text_maker.images_to_alt = True
+    return text_maker.handle(summary.replace("<br>", '\n'))
 
 bot = commands.Bot(command_prefix=COMMAND_PREFIX)
 
@@ -93,7 +101,7 @@ def format_message(item):
     limit = 1900 - len(item["link"]) - len("...")
 
     if len(message) > limit:
-        message = message[:limit] + "...";
+        message = message[:limit] + "...\n";
 
     if item["link"] not in message:
         message += item["link"]
