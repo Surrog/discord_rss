@@ -210,7 +210,9 @@ async def pull_news_at_interval():
         date_now = date_now + datetime.timedelta(days=1)
     
     date_now = date_now.replace(hour=HOUR_OF_FLASH_NEWS, minute=0)
-    second_to_wait = abs(date_now - datetime.datetime.now()).total_seconds() 
+    second_to_wait = abs(date_now - datetime.datetime.now()).total_seconds()
+    if second_to_wait < 60:
+        second_to_wait = 24*3600
 
     app_log.info("next flash news in {0} hours".format(second_to_wait / 3600))
     await asyncio.sleep(second_to_wait)
