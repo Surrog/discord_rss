@@ -96,16 +96,20 @@ async def fetch_initial_link():
                         configuration["link_done"][url].append(item["link"])
 
 def format_message(item):
-    message = "__**" + item["title"] + "**__\n"
-    message += cleanup_summary(item["summary"]) + '\n'
-    limit = 1900 - len(item["link"]) - len("...")
+    summary = cleanup_summary(item["summary"])
 
-    if len(message) > limit:
-        message = message[:limit] + "...\n";
+    if "https://steamcommunity.com/ogg/" not in summary:
+        message = "__**" + item["title"] + "**__\n"
+        message += cleanup_summary(item["summary"]) + '\n'
+        limit = 1900 - len(item["link"]) - len("...")
 
-    if item["link"] not in message:
-        message += item["link"]
-    return message
+        if len(message) > limit:
+            message = message[:limit] + "...\n";
+
+        if item["link"] not in message:
+            message += item["link"]
+        return message
+    return ""
 
 quip_counter = 0
 def get_quip():
