@@ -12,6 +12,7 @@ COPY main.py /home/appuser/src
 COPY requirements.txt /home/appuser/src
 WORKDIR /home/appuser/src
 
+RUN python -m pip install --upgrade pip
 RUN pip install -U -r /home/appuser/src/requirements.txt
 
 CMD ["python", "main.py"]

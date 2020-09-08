@@ -12,6 +12,7 @@ from logging.handlers import RotatingFileHandler
 import sys
 from time import mktime
 import html2text
+import re
 
 DISCORD_TOKEN = config("DISCORD_TOKEN")
 CONFIGURATION_PATH = config("CONFIGURATION_PATH", default="discord_rss_config.json")
@@ -21,6 +22,12 @@ URLS = config("URL_LIST")
 CHANNEL_TARGET = config("CHANNEL_TO_POST", default="")
 HOUR_OF_FLASH_NEWS = int(config("HOUR_OF_FLASH_NEWS", default=datetime.datetime.now().hour)) % 24
 QUIP_ON_NEWS = config("QUIP_ON_NEWS", default="on_multiple_news")
+SALES = config("SALES", default="no")
+
+if SALES == "yes":
+    SALES = True
+else:
+    SALES = False
 
 if QUIP_ON_NEWS == "yes":
     QUIP_ON_NEWS = 1
@@ -75,13 +82,23 @@ threading.excepthook = exception_handler
 def cleanup_summary(summary):
     text_maker = html2text.HTML2Text()
     text_maker.ignore_links = True
-    text_maker.ignore_images = True
     text_maker.inline_links = True
     text_maker.protect_links = True
     text_maker.ignore_anchors = True
     text_maker.skip_internal_links = True
-    text_maker.images_to_alt = True
-    return text_maker.handle(summary.replace("<br>", '\n'))
+    text_maker.body_width = 1024
+
+    message = text_maker.handle(summary)
+
+    #remove superfluous format of image links
+    while True:
+        index = message.find("![](")
+        if index == -1:
+            break
+        end = message.find(")", index)
+        message = message[:index] + message[index + 4:end] + message[end + 1:]
+    
+    return message
 
 bot = commands.Bot(command_prefix=COMMAND_PREFIX)
 
@@ -98,7 +115,7 @@ async def fetch_initial_link():
 def format_message(item):
     summary = cleanup_summary(item["summary"])
 
-    if "https://steamcommunity.com/ogg/" not in summary:
+    if "https://steamcommunity.com/ogg/" not in summary and (SALES or "sale" not in item["title"]):
         message = "__**" + item["title"] + "**__\n"
         message += cleanup_summary(item["summary"]) + '\n'
         limit = 1900 - len(item["link"]) - len("...")
@@ -161,8 +178,8 @@ async def pull_news(ctx=None):
         for msg in messages:
             await ctx.send(msg)
                                                             
-        if len(url_errored) > 0:
-                await ctx.send("Sorry these url(s) failed: {0}".format(str(url_errored)))
+        #if len(url_errored) > 0:
+                #await ctx.send("Sorry these url(s) failed: {0}".format(str(url_errored)))
 
     configuration["last_run"] = str(datetime.datetime.now())
     with open(CONFIGURATION_PATH, "w") as f:
