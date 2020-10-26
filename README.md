@@ -35,4 +35,4 @@ QUIP_ON_NEWS=<yes | no | on_multiple_news> (default=on_multiple_news)  # If the 
 SALES = <yes | no> (default=no) # If the bot remove news that contain the word "sales"
 ```
 + Build the docker image: `sudo docker build -t <yourname>  .`
-+ Run the docker image built with the .env: `sudo docker run -d --restart unless-stopped --name <yourname> --env-file .env -e TZ=Europe/Paris surrog/discord_rss`
++ Run the docker image built with the .env: `sudo docker run -d --restart unless-stopped --name <yourinstancename> --env-file .env -e TZ=Europe/Paris <yourname>`
