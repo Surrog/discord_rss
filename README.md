@@ -7,6 +7,7 @@ Tuto: https://realpython.com/how-to-make-a-discord-bot-python/
 
 Doc: 
 https://pypi.org/project/discord.py/
+
 https://pypi.org/project/python-decouple/
 
 ## Commands
