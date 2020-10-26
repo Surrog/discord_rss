@@ -28,7 +28,7 @@ DISCORD_TOKEN=<token> # token id given by discord
 CONFIGURATION_PATH=<filepath> (default="discord_rss_config.json") # filepath where the bot store its last actions
 LOGGING_PATH=<filepath> (default="discord_rss.log") # filepath where the bot log is dumped
 COMMAND_PREFIX=<character> (default='/') # character prefix to start a command dedicate to this bot
-URLS=<url>[, <url>, ...] # urls to rss separated by a ','
+URL_LIST=<url>[, <url>, ...] # urls to rss separated by a ','
 CHANNEL_TO_POST=<string> (default="") # channel name where the bot will post news
 HOUR_OF_FLASH_NEWS=<number> (default=the current hour at which the bot is started) # the hour at which the bot will fetch the news
 QUIP_ON_NEWS=<yes | no | on_multiple_news> (default=on_multiple_news)  # If the bot add a small quip when news are being posted
