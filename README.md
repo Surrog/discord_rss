@@ -20,7 +20,7 @@ https://pypi.org/project/python-decouple/
 
 ## Installation Guide
 + Clone this repository on your server
-+ Create your bot on the discord bot interface to generate a valid key
++ Create your bot on the discord bot interface to generate a valid bot token id
 + Create a `.env` file in the directory folder where you cloned this repository
 + Edit the `.env` with these configuration keys:
 ```
