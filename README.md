@@ -32,7 +32,7 @@ URLS=<url>[, <url>, ...] # urls to rss separated by a ','
 CHANNEL_TO_POST=<string> (default="") # channel name where the bot will post news
 HOUR_OF_FLASH_NEWS=<number> (default=the current hour at which the bot is started) # the hour at which the bot will fetch the news
 QUIP_ON_NEWS=<yes | no | on_multiple_news> (default=on_multiple_news)  # If the bot add a small quip when news are being posted
-SALES = <yes | no> (default="no") # If the bot remove new that contain the word "sales"
+SALES = <yes | no> (default=no) # If the bot remove new that contain the word "sales"
 ```
 + Build the docker image: `sudo docker build -t <yourname>  .`
 + Run the docker image built with the .env: `sudo docker run -d --restart unless-stopped --name <yourname> --env-file .env -e TZ=Europe/Paris surrog/discord_rss`
