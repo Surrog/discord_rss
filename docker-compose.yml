@@ -1,0 +1,10 @@
+version: "2.0"
+services:
+   bot:
+      build: .
+      ports:
+        - "80:80"
+      env_file:
+        - .env
+      environment:
+        - TZ=Europe/Paris
