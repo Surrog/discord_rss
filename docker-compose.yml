@@ -8,3 +8,4 @@ services:
         - .env
       environment:
         - TZ=Europe/Paris
+      restart: always
