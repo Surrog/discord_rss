@@ -112,10 +112,13 @@ async def fetch_initial_link():
                     if item["link"] not in configuration["link_done"][url]:
                         configuration["link_done"][url].append(item["link"])
 
+def is_sale(title: str) -> bool:
+    return "sale" in title or "Sale" in title or "livestream" in title or "Livestream" in title
+                        
 def format_message(item):
     summary = cleanup_summary(item["summary"])
 
-    if "https://steamcommunity.com/ogg/" not in summary and (SALES or "sale" not in item["title"]):
+    if "https://steamcommunity.com/ogg/" not in summary and (SALES or not is_sale(item["title"])):
         message = "__**" + item["title"] + "**__\n"
         message += cleanup_summary(item["summary"]) + '\n'
         limit = 1900 - len(item["link"]) - len("...")
