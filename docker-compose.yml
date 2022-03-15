@@ -9,4 +9,4 @@ services:
       environment:
         - TZ=Europe/Paris
       restart: always
-      network: host
+      network_mode: "host"
